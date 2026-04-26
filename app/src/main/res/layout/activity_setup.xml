@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#0a0f1e" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:gravity="center"
+        android:padding="32dp" android:minHeight="600dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="🏦" android:textSize="64sp" android:layout_gravity="center"
+            android:layout_marginBottom="16dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Caisse Solidaire" android:textColor="#f8fafc"
+            android:textSize="28sp" android:textStyle="bold"
+            android:layout_gravity="center" android:layout_marginBottom="8dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Configurez votre caisse pour commencer"
+            android:textColor="#64748b" android:textSize="14sp"
+            android:layout_gravity="center" android:layout_marginBottom="40dp"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:background="@drawable/card_bg"
+            android:padding="20dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="URL DE VOTRE WEB APP" android:textColor="#64748b"
+                android:textSize="11sp" android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+                <EditText android:id="@+id/etUrl" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:hint="https://script.google.com/macros/s/.../exec"
+                    android:hintTextColor="#64748b" android:textColor="#f8fafc"
+                    android:textSize="13sp" android:background="@drawable/input_bg"
+                    android:padding="12dp" android:inputType="textUri"
+                    android:singleLine="true" android:layout_marginEnd="8dp"/>
+                <Button android:id="@+id/btnPaste" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="📋"
+                    android:textSize="18sp" android:background="@drawable/btn_ghost_bg"
+                    android:paddingStart="14dp" android:paddingEnd="14dp"
+                    android:paddingTop="10dp" android:paddingBottom="10dp"/>
+            </LinearLayout>
+            <TextView android:id="@+id/tvError" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text=""
+                android:textColor="#fca5a5" android:textSize="13sp"
+                android:background="@drawable/alert_error_bg" android:padding="10dp"
+                android:layout_marginBottom="16dp" android:visibility="gone"/>
+            <Button android:id="@+id/btnConnect" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="Se Connecter"
+                android:textColor="#ffffff" android:textStyle="bold" android:textSize="15sp"
+                android:background="@drawable/btn_primary_bg"
+                android:paddingTop="14dp" android:paddingBottom="14dp"/>
+        </LinearLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="L'URL se trouve dans GAS > Deployer > Gerer les deploiements"
+            android:textColor="#64748b" android:textSize="12sp"
+            android:layout_marginTop="24dp" android:lineSpacingMultiplier="1.4"/>
+    </LinearLayout>
+</ScrollView>
