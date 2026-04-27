@@ -18,11 +18,13 @@ jobs:
           gradle-version: '8.4'
           cache-disabled: true
       - uses: android-actions/setup-android@v3
+      - name: Show project files
+        run: |
+          echo "=== MANIFEST ==="
+          cat app/src/main/AndroidManifest.xml
+          echo "=== RES FILES ==="
+          find app/src/main/res -type f | sort
+          echo "=== JAVA FILES ==="
+          find app/src/main/java -type f | sort
       - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: caisse-solidaire-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+        run: gradle assembleDebug --info 2>&1 | head -100
