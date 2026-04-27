@@ -35,8 +35,8 @@ class MainActivity : AppCompatActivity() {
     private val permissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
-        if (denied.isNotEmpty()) {
-            Toast.makeText(this, "Certaines permissions refusees: " + denied.joinToString(), Toast.LENGTH_LONG).show()
+        if (deniedPerms.isNotEmpty()) {
+            Toast.makeText(this, "Certaines permissions refusees: " + deniedPerms.joinToString(), Toast.LENGTH_LONG).show()
         }
     }
 
