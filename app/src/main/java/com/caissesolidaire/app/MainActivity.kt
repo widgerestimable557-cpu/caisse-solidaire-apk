@@ -1,10 +1,13 @@
 package com.caissesolidaire.app
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -29,15 +32,59 @@ class MainActivity : AppCompatActivity() {
         filePathCallback = null
     }
 
+    private val permissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (denied.isNotEmpty()) {
+            Toast.makeText(this, "Certaines permissions refusees: " + denied.joinToString(), Toast.LENGTH_LONG).show()
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        requestNeededPermissions()
+
         val prefs = getSharedPreferences(SetupActivity.PREFS_NAME, Context.MODE_PRIVATE)
         webAppUrl = intent.getStringExtra(SetupActivity.EXTRA_URL) ?: prefs.getString(SetupActivity.PREF_URL, "") ?: ""
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Caisse Solidaire"
+        setupWebView()
+        binding.swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent))
+        binding.swipeRefresh.setOnRefreshListener {
+            if (isOnline()) { binding.offlineView.visibility = View.GONE; binding.webView.reload() }
+            else { binding.swipeRefresh.isRefreshing = false; showOffline() }
+        }
+        binding.btnRetry.setOnClickListener {
+            if (isOnline()) { binding.offlineView.visibility = View.GONE; load() }
+            else Toast.makeText(this, "Hors ligne", Toast.LENGTH_SHORT).show()
+        }
+        if (isOnline()) load() else showOffline()
+    }
+
+    private fun requestNeededPermissions() {
+        val needed = mutableListOf<String>()
+        val perms = mutableListOf(Manifest.permission.CAMERA)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            perms.add(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            perms.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        for (p in perms) {
+            if (ContextCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED) {
+                needed.add(p)
+            }
+        }
+        if (needed.isNotEmpty()) {
+            permissionsLauncher.launch(needed.toTypedArray())
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun setupWebView() {
         val ws = binding.webView.settings
         ws.javaScriptEnabled = true; ws.domStorageEnabled = true; ws.databaseEnabled = true
         ws.useWideViewPort = true; ws.loadWithOverviewMode = true; ws.setSupportZoom(false)
@@ -49,7 +96,9 @@ class MainActivity : AppCompatActivity() {
         binding.webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(v: WebView?, u: String?, b: android.graphics.Bitmap?) { binding.progressBar.visibility = View.VISIBLE }
             override fun onPageFinished(v: WebView?, u: String?) { binding.progressBar.visibility = View.GONE; binding.swipeRefresh.isRefreshing = false }
-            override fun onReceivedError(v: WebView?, r: WebResourceRequest?, e: WebResourceError?) { if (r?.isForMainFrame == true) { binding.progressBar.visibility = View.GONE; showOffline() } }
+            override fun onReceivedError(v: WebView?, r: WebResourceRequest?, e: WebResourceError?) {
+                if (r?.isForMainFrame == true) { binding.progressBar.visibility = View.GONE; showOffline() }
+            }
         }
         binding.webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(v: WebView?, p: Int) { binding.progressBar.progress = p }
@@ -58,10 +107,6 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onPermissionRequest(r: PermissionRequest?) { r?.grant(r.resources) }
         }
-        binding.swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent))
-        binding.swipeRefresh.setOnRefreshListener { if (isOnline()) { binding.offlineView.visibility = View.GONE; binding.webView.reload() } else { binding.swipeRefresh.isRefreshing = false; showOffline() } }
-        binding.btnRetry.setOnClickListener { if (isOnline()) { binding.offlineView.visibility = View.GONE; load() } else Toast.makeText(this, "Hors ligne", Toast.LENGTH_SHORT).show() }
-        if (isOnline()) load() else showOffline()
     }
 
     private fun load() { binding.offlineView.visibility = View.GONE; binding.webView.visibility = View.VISIBLE; binding.webView.loadUrl(webAppUrl) }
@@ -77,8 +122,14 @@ class MainActivity : AppCompatActivity() {
         R.id.action_change_url -> {
             val input = android.widget.EditText(this).apply { setText(webAppUrl); setPadding(48, 32, 48, 32) }
             AlertDialog.Builder(this).setTitle("Changer de caisse").setView(input)
-                .setPositiveButton("OK") { _, _ -> val u = input.text.toString().trim(); if (u.startsWith("https://")) { webAppUrl = u; getSharedPreferences(SetupActivity.PREFS_NAME, Context.MODE_PRIVATE).edit().putString(SetupActivity.PREF_URL, u).apply(); load() } }
-                .setNegativeButton("Annuler", null).show(); true
+                .setPositiveButton("OK") { _, _ ->
+                    val u = input.text.toString().trim()
+                    if (u.startsWith("https://")) {
+                        webAppUrl = u
+                        getSharedPreferences(SetupActivity.PREFS_NAME, Context.MODE_PRIVATE).edit().putString(SetupActivity.PREF_URL, u).apply()
+                        load()
+                    }
+                }.setNegativeButton("Annuler", null).show(); true
         }
         R.id.action_clear_cache -> { binding.webView.clearCache(true); CookieManager.getInstance().removeAllCookies(null); load(); true }
         else -> super.onOptionsItemSelected(i)
