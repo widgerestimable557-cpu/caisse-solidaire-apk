@@ -32,11 +32,11 @@ class MainActivity : AppCompatActivity() {
         filePathCallback = null
     }
 
-    private val permissionsLauncher = registerForActivityResult(
+    private val permLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { results ->
-        if (deniedPerms.isNotEmpty()) {
-            Toast.makeText(this, "Certaines permissions refusees: " + deniedPerms.joinToString(), Toast.LENGTH_LONG).show()
+    ) { perms ->
+        if (refused.isNotEmpty()) {
+            Toast.makeText(this, "Permissions refusees: ${refused.size}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -45,9 +45,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        requestNeededPermissions()
-
+        askPermissions()
         val prefs = getSharedPreferences(SetupActivity.PREFS_NAME, Context.MODE_PRIVATE)
         webAppUrl = intent.getStringExtra(SetupActivity.EXTRA_URL) ?: prefs.getString(SetupActivity.PREF_URL, "") ?: ""
         setSupportActionBar(binding.toolbar)
@@ -65,22 +63,17 @@ class MainActivity : AppCompatActivity() {
         if (isOnline()) load() else showOffline()
     }
 
-    private fun requestNeededPermissions() {
-        val needed = mutableListOf<String>()
-        val perms = mutableListOf(Manifest.permission.CAMERA)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            perms.add(Manifest.permission.READ_MEDIA_IMAGES)
-        } else {
-            perms.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+    private fun askPermissions() {
+        val toAsk = mutableListOf<String>()
+        val list = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            listOf(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
+        else
+            listOf(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
+        for (p in list) {
+            if (ContextCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED)
+                toAsk.add(p)
         }
-        for (p in perms) {
-            if (ContextCompat.checkSelfPermission(this, p) != PackageManager.PERMISSION_GRANTED) {
-                needed.add(p)
-            }
-        }
-        if (needed.isNotEmpty()) {
-            permissionsLauncher.launch(needed.toTypedArray())
-        }
+        if (toAsk.isNotEmpty()) permLauncher.launch(toAsk.toTypedArray())
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -124,11 +117,7 @@ class MainActivity : AppCompatActivity() {
             AlertDialog.Builder(this).setTitle("Changer de caisse").setView(input)
                 .setPositiveButton("OK") { _, _ ->
                     val u = input.text.toString().trim()
-                    if (u.startsWith("https://")) {
-                        webAppUrl = u
-                        getSharedPreferences(SetupActivity.PREFS_NAME, Context.MODE_PRIVATE).edit().putString(SetupActivity.PREF_URL, u).apply()
-                        load()
-                    }
+                    if (u.startsWith("https://")) { webAppUrl = u; getSharedPreferences(SetupActivity.PREFS_NAME, Context.MODE_PRIVATE).edit().putString(SetupActivity.PREF_URL, u).apply(); load() }
                 }.setNegativeButton("Annuler", null).show(); true
         }
         R.id.action_clear_cache -> { binding.webView.clearCache(true); CookieManager.getInstance().removeAllCookies(null); load(); true }
