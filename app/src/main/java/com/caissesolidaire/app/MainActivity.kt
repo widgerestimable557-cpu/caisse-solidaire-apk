@@ -47,16 +47,8 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = "Caisse Solidaire"
         setupWebView()
-        binding.swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.accent))
-        binding.swipeRefresh.setOnRefreshListener {
-            if (isOnline()) {
-                binding.offlineView.visibility = View.GONE
-                binding.webView.reload()
-            } else {
-                binding.swipeRefresh.isRefreshing = false
-                showOffline()
-            }
-        }
+        // pull-to-refresh desactive
+        // pull-to-refresh desactive
         binding.btnRetry.setOnClickListener {
             if (isOnline()) { binding.offlineView.visibility = View.GONE; load() }
             else Toast.makeText(this, "Hors ligne", Toast.LENGTH_SHORT).show()
@@ -103,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onPageFinished(v: WebView?, u: String?) {
                 binding.progressBar.visibility = View.GONE
-                binding.swipeRefresh.isRefreshing = false
+                // swipe refresh desactive
             }
             override fun onReceivedError(v: WebView?, r: WebResourceRequest?, e: WebResourceError?) {
                 if (r?.isForMainFrame == true) {
