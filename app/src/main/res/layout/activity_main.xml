@@ -15,13 +15,13 @@
             android:layout_width="match_parent" android:layout_height="3dp"
             android:progressTint="#3b82f6" android:max="100" android:visibility="gone"/>
     </com.google.android.material.appbar.AppBarLayout>
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    <FrameLayout
         android:id="@+id/swipeRefresh" android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <WebView android:id="@+id/webView" android:layout_width="match_parent"
             android:layout_height="match_parent" android:background="#0a0f1e"/>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </FrameLayout>
     <LinearLayout android:id="@+id/offlineView" android:layout_width="match_parent"
         android:layout_height="match_parent" android:orientation="vertical"
         android:gravity="center" android:padding="40dp" android:visibility="gone"
